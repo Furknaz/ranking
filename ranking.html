@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking de Vendas - Admin</title>
+    
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || 
+            (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+          darkMode: 'class',
+        }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=teko:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'teko', sans-serif; }
+        .transition-all { transition: all 0.3s ease-in-out; }
+        body, .bg-white, .bg-gray-50 { transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .modal-backdrop { animation: fadeIn 0.3s ease-out forwards; }
+        .seller-image { width: 40px; height: 40px; object-fit: cover; border-radius: 50%; margin-right: 12px; }
+        .seller-image-large { width: 80px; height: 80px; object-fit: cover; border-radius: 50%; }
+        
+        /* Classe de animação para a linha ser excluída */
+        .fade-out-row {
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+            opacity: 0;
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+
+        <header class="relative text-center mb-8">
+            <h1 class="text-4xl font-bold text-indigo-600 dark:text-indigo-400">🏆 Ranking de Vendas</h1>
+            <p class="text-gray-500 mt-2 dark:text-gray-400">Acompanhe o desempenho da sua equipe em tempo real.</p>
+            
+            <div class="absolute top-0 right-0 flex items-center space-x-2">
+                <button id="open-tv-view-button" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5" title="Abrir Modo TV em Nova Aba">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/>
+                    </svg>
+                </button>
+
+                <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 5.05A1 1 0 003.636 6.464l.707.707a1 1 0 001.414-1.414l-.707-.707zM3 11a1 1 0 100-2H2a1 1 0 100 2h1zM6.464 16.364a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414z"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1 space-y-8">
+                 <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md fade-in">
+                    <h2 class="text-2xl font-semibold mb-4 flex items-center dark:text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-2 text-indigo-500 dark:text-indigo-400"><path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" /></svg>
+                        Adicionar Vendedor
+                    </h2>
+                    <form id="add-seller-form">
+                        <div class="mb-4">
+                            <label for="seller-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome do Vendedor</label>
+                            <input type="text" id="seller-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600" placeholder="Ex: João Silva" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="seller-image-upload" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto (Opcional)</label>
+                            <input type="file" id="seller-image-upload" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-gray-700 dark:file:text-gray-300 dark:hover:file:bg-gray-600">
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cadastrar</button>
+                    </form>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md fade-in" style="animation-delay: 0.1s;">
+                    <h2 class="text-2xl font-semibold mb-4 flex items-center dark:text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-2 text-green-500 dark:text-green-400"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.826-1.106-2.17 0-2.996l.75-1.001c.983-.656 2.278-.656 3.262 0l.75 1.001" /></svg>
+                        Registrar Venda
+                    </h2>
+                    <form id="add-sale-form">
+                        <div class="mb-4">
+                            <label for="sale-seller" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vendedor</label>
+                            <select id="sale-seller" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600" required>
+                                <option value="">Selecione um vendedor</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="sale-value" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Valor da Venda (R$)</label>
+                            <input type="text" inputmode="decimal" id="sale-value" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600" placeholder="Ex: 250,50" required>
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Registrar</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg fade-in" style="animation-delay: 0.2s;">
+                <h2 class="text-3xl font-bold mb-6 text-center dark:text-white">Pódio de Vendas</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Pos.</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Vendedor</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total Vendas</th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ranking-table-body" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"></tbody>
+                    </table>
+                </div>
+                <div id="empty-state" class="text-center py-10 hidden">
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75l-2.489-2.489m0 0a3.375 3.375 0 10-4.773-4.773 3.375 3.375 0 004.774 4.774zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <p class="mt-4 text-gray-500 dark:text-gray-400">Nenhum vendedor cadastrado ainda.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast" class="fixed bottom-5 right-5 bg-gray-900 text-white py-3 px-5 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 dark:bg-gray-100 dark:text-gray-900"><p id="toast-message"></p></div>
+    <div id="edit-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden modal-backdrop z-40"><div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4"><h3 class="text-xl font-semibold mb-4 dark:text-white">Editar Vendedor</h3><form id="edit-seller-form"><input type="hidden" id="edit-seller-id"><input type="hidden" id="edit-seller-original-image"><div class="mb-4 text-center"><img id="edit-seller-img-preview" src="" alt="Prévia da imagem" class="seller-image-large mx-auto mb-4 rounded-full"></div><div class="mb-4"><label for="edit-seller-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome</label><input type="text" id="edit-seller-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600" required></div><div class="mb-4"><label for="edit-seller-image-upload" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trocar Foto</label><input type="file" id="edit-seller-image-upload" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-gray-700 dark:file:text-gray-300 dark:hover:file:bg-gray-600"></div><div class="flex justify-end space-x-4"><button type="button" class="btn-cancel px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">Cancelar</button><button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Salvar</button></div></form></div></div>
+    <div id="delete-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden modal-backdrop z-50"><div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4 text-center"><svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg><h3 class="text-xl font-semibold mb-2 dark:text-white">Confirmar Exclusão</h3><p id="delete-modal-text" class="text-gray-500 dark:text-gray-400 mb-6"></p><div class="flex justify-center space-x-4"><button type="button" class="btn-cancel px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">Cancelar</button><button type="button" id="confirm-delete" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Sim, Excluir</button></div></div></div>
+    <div id="sales-detail-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden modal-backdrop z-40"><div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl mx-4"><h3 id="sales-detail-seller-name" class="text-xl font-semibold mb-4 dark:text-white">Vendas de [Nome]</h3><div class="overflow-x-auto mb-4" style="max-height: 300px;"><table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"><thead class="bg-gray-50 dark:bg-gray-700 sticky top-0"><tr><th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Data</th><th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Valor</th><th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ações</th></tr></thead><tbody id="sales-detail-table-body" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"></tbody></table></div><div class="flex justify-end"><button type="button" class="btn-cancel px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">Fechar</button></div></div></div>
+    <div id="edit-sale-value-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden modal-backdrop z-50"><div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm mx-4"><h3 class="text-xl font-semibold mb-4 dark:text-white">Editar Valor da Venda</h3><form id="edit-sale-value-form"><input type="hidden" id="edit-sale-value-id"><div class="mb-4"><label for="new-sale-value" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Novo Valor (R$)</label><input type="text" inputmode="decimal" id="new-sale-value" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600" required></div><div class="flex justify-end space-x-4"><button type="button" class="btn-cancel px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">Cancelar</button><button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Salvar</button></div></form></div></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- CONSTANTES E VARIÁVEIS GLOBAIS ---
+        const API_URL = 'http://localhost:3000/api';
+        const addSellerForm = document.getElementById('add-seller-form');
+        const rankingTableBody = document.getElementById('ranking-table-body');
+        const emptyState = document.getElementById('empty-state');
+        const saleSellerSelect = document.getElementById('sale-seller');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+        const editModal = document.getElementById('edit-modal');
+        const deleteModal = document.getElementById('delete-modal');
+        const salesDetailModal = document.getElementById('sales-detail-modal');
+        const editSaleValueModal = document.getElementById('edit-sale-value-modal');
+        const addSaleForm = document.getElementById('add-sale-form');
+        const editSellerForm = document.getElementById('edit-seller-form');
+        const editSaleValueForm = document.getElementById('edit-sale-value-form');
+        let sellers = [];
+        let itemToDelete = { id: null, type: null, sellerId: null };
+        let currentSellerForDetails = null;
+        let imagePlaceholder = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2QxZDVmYiI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MxLjY2IDAgMyAxLjM0IDMgM3MtMS4zNCAzLTMgMy0zLTEuMzQtMy0zIDEuMzQtMyAzLTN6bTAgMTRjLTIuNjcgMC01LTEuMjktNi42Ny0zLjIyLjgxLTEuMzEgMi42OC0yLjI4IDQuNjctMi4yOCAxLjk5IDAgMy44Ni45NyA0LjY3IDIuMjgtMS42NyAxLjkzLTMuOTkgMy4yMi02LjY3IDMuMjJ6Ii8+PC9zdmc+';
+        
+        // --- FUNÇÕES AUXILIARES ---
+        const apiRequest = async (endpoint, method = 'GET', body = null) => {
+            try {
+                const options = { method, headers: { 'Content-Type': 'application/json' }};
+                if (body) { options.body = JSON.stringify(body); }
+                const response = await fetch(`${API_URL}${endpoint}`, options);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                    throw new Error(errorData.message || 'Erro na comunicação com o servidor.');
+                }
+                if (response.status === 204) { return null; }
+                return response.json();
+            } catch (error) {
+                showToast(error.message, true);
+                console.error(`API Error on ${method} ${endpoint}:`, error);
+                throw error;
+            }
+        };
+
+        const fileToBase64 = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+
+        const showToast = (message, isError = false) => {
+            toastMessage.textContent = message;
+            toast.className = 'fixed bottom-5 right-5 text-white py-3 px-5 rounded-lg shadow-xl transform transition-all duration-300';
+            toast.classList.add(isError ? 'bg-red-600' : 'bg-gray-900', 'opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-20');
+            }, 3000);
+        };
+
+        // --- LÓGICA DE RENDERIZAÇÃO ---
+        const populateSellersSelect = () => {
+            const currentSelection = saleSellerSelect.value;
+            saleSellerSelect.innerHTML = '<option value="">Selecione um vendedor</option>';
+            sellers.forEach(seller => {
+                const option = document.createElement('option');
+                option.value = seller.id;
+                option.textContent = seller.name;
+                saleSellerSelect.appendChild(option);
+            });
+            saleSellerSelect.value = currentSelection;
+        };
+
+        const updateRanksInDOM = () => {
+            const rows = rankingTableBody.querySelectorAll('tr');
+            rows.forEach((row, index) => {
+                const rank = index + 1;
+                let medal = '';
+                if (rank === 1) medal = '🥇';
+                else if (rank === 2) medal = '🥈';
+                else if (rank === 3) medal = '🥉';
+                
+                const rankCell = row.querySelector('td:first-child div');
+                if (rankCell) {
+                    rankCell.innerHTML = `${rank} ${medal}`;
+                }
+            });
+        };
+
+        const renderRanking = (sellerList) => {
+            sellers = sellerList.sort((a, b) => b.totalSales - a.totalSales);
+            rankingTableBody.innerHTML = ''; 
+
+            if (sellers.length === 0) {
+                emptyState.classList.remove('hidden');
+                rankingTableBody.parentElement.parentElement.classList.add('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                rankingTableBody.parentElement.parentElement.classList.remove('hidden');
+                sellers.forEach((seller, index) => {
+                    const rank = index + 1;
+                    let medal = '';
+                    if (rank === 1) medal = '🥇';
+                    if (rank === 2) medal = '🥈';
+                    if (rank === 3) medal = '🥉';
+                    const row = document.createElement('tr');
+                    row.className = 'fade-in';
+                    // Adiciona um data-attribute para o ID do vendedor na linha
+                    row.dataset.sellerId = seller.id;
+                    row.innerHTML = `
+                        <td class="px-6 py-4"><div class="text-lg font-bold">${rank} ${medal}</div></td>
+                        <td class="px-6 py-4"><div class="flex items-center"><img src="${seller.image || imagePlaceholder}" alt="${seller.name}" class="seller-image"><span class="font-medium">${seller.name}</span></div></td>
+                        <td class="px-6 py-4 font-semibold">${seller.totalSales.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button data-id="${seller.id}" class="view-sales-btn text-blue-600 hover:text-blue-900 dark:text-blue-400 p-1" title="Ver Vendas">Vendas</button>
+                            <button data-id="${seller.id}" class="edit-btn text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 p-1 ml-2" title="Editar">Editar</button>
+                            <button data-id="${seller.id}" class="delete-btn text-red-600 hover:text-red-900 dark:text-red-400 p-1 ml-2" title="Excluir">Excluir</button>
+                        </td>`;
+                    rankingTableBody.appendChild(row);
+                });
+            }
+            populateSellersSelect();
+        };
+
+        const renderSellerSales = (sales) => {
+            const tableBody = document.getElementById('sales-detail-table-body');
+            tableBody.innerHTML = '';
+            if (sales.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500">Nenhuma venda registrada.</td></tr>`;
+                return;
+            }
+            sales.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(sale => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4">${new Date(sale.date).toLocaleString('pt-BR')}</td>
+                    <td class="px-6 py-4 font-medium">${sale.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                    <td class="px-6 py-4 text-right">
+                        <button data-id="${sale.id}" data-seller-id="${sale.sellerId}" class="edit-sale-btn text-indigo-600 hover:text-indigo-900 p-1">Editar</button>
+                        <button data-id="${sale.id}" data-seller-id="${sale.sellerId}" class="delete-sale-btn text-red-600 hover:text-red-900 p-1 ml-2">Excluir</button>
+                    </td>`;
+                tableBody.appendChild(row);
+            });
+        };
+
+        // --- LÓGICA DOS MODALS ---
+        const openModal = (modalElement) => modalElement.classList.remove('hidden');
+        const closeModal = (modalElement) => modalElement.classList.add('hidden');
+
+        const openEditSellerModal = (sellerId) => {
+            const seller = sellers.find(s => s.id === sellerId);
+            if (seller) {
+                document.getElementById('edit-seller-id').value = seller.id;
+                document.getElementById('edit-seller-name').value = seller.name;
+                document.getElementById('edit-seller-img-preview').src = seller.image || imagePlaceholder;
+                document.getElementById('edit-seller-original-image').value = seller.image || '';
+                document.getElementById('edit-seller-image-upload').value = '';
+                openModal(editModal);
+            }
+        };
+
+        const openDeleteModal = (id, type, sellerId = null) => {
+            itemToDelete = { id, type, sellerId };
+            const modalText = document.getElementById('delete-modal-text');
+            if (type === 'seller') {
+                const seller = sellers.find(s => s.id === id);
+                modalText.textContent = seller ? `Deseja excluir "${seller.name}"? Todas as suas vendas também serão removidas.` : 'Deseja excluir este vendedor?';
+            } else {
+                modalText.textContent = `Deseja excluir esta venda? Esta ação não pode ser desfeita.`;
+            }
+            openModal(deleteModal);
+        };
+
+        // --- MANIPULADORES DE EVENTOS (HANDLERS) ---
+        const handleAddSeller = async (e) => { e.preventDefault(); const name = document.getElementById('seller-name').value.trim(); const imageFile = document.getElementById('seller-image-upload').files[0]; if (!name) return showToast('O nome é obrigatório.', true); let imageBase64 = null; if (imageFile) imageBase64 = await fileToBase64(imageFile); try { await apiRequest('/vendedores', 'POST', { name, image: imageBase64 }); showToast('Vendedor cadastrado!'); addSellerForm.reset(); init(); } catch (error) {} };
+        const handleAddSale = async (e) => { e.preventDefault(); const sellerId = parseInt(document.getElementById('sale-seller').value, 10); const saleValueInput = document.getElementById('sale-value').value; const value = parseFloat(saleValueInput.replace(/\./g, '').replace(',', '.')); if (!sellerId || !value || value <= 0) { return showToast('Preencha os campos corretamente.', true); } try { await apiRequest('/vendas', 'POST', { sellerId, value }); showToast('Venda registrada com sucesso!'); addSaleForm.reset(); init(); } catch (error) {} };
+        const handleEditSeller = async (e) => { e.preventDefault(); const id = parseInt(document.getElementById('edit-seller-id').value, 10); const name = document.getElementById('edit-seller-name').value.trim(); const imageFile = document.getElementById('edit-seller-image-upload').files[0]; let image = document.getElementById('edit-seller-original-image').value; if (imageFile) { image = await fileToBase64(imageFile); } try { await apiRequest(`/vendedores/${id}`, 'PUT', { name, image }); showToast('Vendedor atualizado!'); closeModal(editModal); init(); } catch(error) {} };
+        
+        // CÓDIGO CORRIGIDO E FINAL
+        const handleConfirmDelete = async () => {
+            const { id, type, sellerId } = itemToDelete;
+            closeModal(deleteModal);
+
+            if (type === 'seller') {
+                const rowToDelete = rankingTableBody.querySelector(`tr[data-seller-id="${id}"]`);
+                if (rowToDelete) {
+                    rowToDelete.classList.add('fade-out-row');
+                }
+                
+                try {
+                    await apiRequest(`/vendedores/${id}`, 'DELETE');
+                    
+                    // Espera a animação para remover o elemento do DOM
+                    setTimeout(() => {
+                        if (rowToDelete) {
+                            rowToDelete.remove();
+                        }
+                        // Atualiza a lista de vendedores no estado local
+                        sellers = sellers.filter(s => s.id !== id);
+                        
+                        // Apenas atualiza os rankings no DOM, sem redesenhar tudo
+                        updateRanksInDOM();
+                        populateSellersSelect();
+                        showToast('Vendedor excluído com sucesso!');
+                         // Verifica se a lista ficou vazia
+                        if (sellers.length === 0) {
+                           emptyState.classList.remove('hidden');
+                           rankingTableBody.parentElement.parentElement.classList.add('hidden');
+                        }
+                    }, 400);
+
+                } catch (error) {
+                    console.error('Falha ao excluir vendedor:', error);
+                    if (rowToDelete) {
+                        rowToDelete.classList.remove('fade-out-row'); // Restaura a linha se a exclusão falhar
+                    }
+                }
+            } else if (type === 'sale') {
+                try {
+                    await apiRequest(`/vendas/${id}`, 'DELETE');
+                    showToast('Venda excluída.');
+                    // Atualiza a lista de vendas do vendedor, se o modal estiver aberto
+                    if (salesDetailModal.classList.contains('hidden') === false && currentSellerForDetails === sellerId) {
+                       const sales = await apiRequest(`/vendedores/${sellerId}/vendas`);
+                       renderSellerSales(sales);
+                    }
+                    // Recarrega tudo pois o total do vendedor mudou
+                    init();
+                } catch (error) {
+                    console.error('Falha ao excluir venda:', error);
+                }
+            }
+        };
+
+        const handleEditSaleValue = async (e) => { e.preventDefault(); const id = parseInt(document.getElementById('edit-sale-value-id').value, 10); const newSaleValueInput = document.getElementById('new-sale-value').value; const value = parseFloat(newSaleValueInput.replace(/\./g, '').replace(',', '.')); if (!id || !value || value <= 0) return showToast('Valor inválido.', true); try { await apiRequest(`/vendas/${id}`, 'PUT', { value }); showToast('Venda atualizada!'); closeModal(editSaleValueModal); if (currentSellerForDetails) { const sales = await apiRequest(`/vendedores/${currentSellerForDetails}/vendas`); renderSellerSales(sales); } init(); } catch(error) {} };
+        
+        // --- ADICIONA OS EVENT LISTENERS ---
+        addSellerForm.addEventListener('submit', handleAddSeller);
+        addSaleForm.addEventListener('submit', handleAddSale);
+        editSellerForm.addEventListener('submit', handleEditSeller);
+        editSaleValueForm.addEventListener('submit', handleEditSaleValue);
+        document.getElementById('confirm-delete').addEventListener('click', handleConfirmDelete);
+        
+        rankingTableBody.addEventListener('click', async (e) => { 
+            const button = e.target.closest('button'); 
+            if (!button) return; 
+            const id = parseInt(button.dataset.id, 10); 
+            if (button.classList.contains('edit-btn')) openEditSellerModal(id); 
+            if (button.classList.contains('delete-btn')) openDeleteModal(id, 'seller'); 
+            if (button.classList.contains('view-sales-btn')) { 
+                const seller = sellers.find(s => s.id === id); 
+                document.getElementById('sales-detail-seller-name').textContent = `Vendas de ${seller.name}`; 
+                currentSellerForDetails = id; 
+                try { 
+                    const sales = await apiRequest(`/vendedores/${id}/vendas`); 
+                    renderSellerSales(sales); 
+                    openModal(salesDetailModal); 
+                } catch(error) {} 
+            } 
+        });
+        
+        document.getElementById('sales-detail-table-body').addEventListener('click', (e) => { 
+            const button = e.target.closest('button'); 
+            if (!button) return; 
+            const id = parseInt(button.dataset.id, 10); 
+            const sellerId = parseInt(button.dataset.sellerId, 10); 
+            if (button.classList.contains('edit-sale-btn')) { 
+                const value = parseFloat(e.target.closest('tr').children[1].textContent.replace(/[^\d,]/g, '').replace(',', '.')); 
+                document.getElementById('edit-sale-value-id').value = id; 
+                document.getElementById('new-sale-value').value = value; 
+                openModal(editSaleValueModal); 
+            } 
+            if (button.classList.contains('delete-sale-btn')) { 
+                openDeleteModal(id, 'sale', sellerId); 
+            } 
+        });
+        
+        document.querySelectorAll('.btn-cancel, .modal-backdrop').forEach(el => { 
+            el.addEventListener('click', (e) => { 
+                if (e.target === el) { 
+                    closeModal(el.closest('.modal-backdrop')); 
+                } 
+            }); 
+        });
+        
+        document.addEventListener('keydown', (e) => { 
+            if (e.key === 'Escape') { 
+                document.querySelectorAll('.modal-backdrop').forEach(m => closeModal(m)); 
+            } 
+        });
+        
+        // --- TEMA E SINCRONIZAÇÃO ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const syncThemeIcons = () => { 
+            const isDark = document.documentElement.classList.contains('dark'); 
+            document.getElementById('theme-toggle-dark-icon').classList.toggle('hidden', isDark); 
+            document.getElementById('theme-toggle-light-icon').classList.toggle('hidden', !isDark); 
+        };
+        themeToggleBtn.addEventListener('click', () => { 
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light'); 
+            syncThemeIcons(); 
+        });
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'theme') {
+                if (event.newValue === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                syncThemeIcons();
+            }
+        });
+
+        // --- NAVEGAÇÃO ---
+        const openTvViewButton = document.getElementById('open-tv-view-button');
+        openTvViewButton.addEventListener('click', () => {
+            window.open('tv-view.html', '_blank');
+        });
+
+        // --- INICIALIZAÇÃO ---
+        const init = async () => {
+            try {
+                const sellerList = await apiRequest('/ranking');
+                renderRanking(sellerList);
+            } catch (error) {
+                renderRanking([]);
+            }
+        };
+        
+        syncThemeIcons();
+        init();
+    });
+    </script>
+</body>
+</html>

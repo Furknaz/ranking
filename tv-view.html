@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR"> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking de Vendas - Televisão</title>
+
+    <script>
+        // Define o tema com base no localStorage ou prefência do sistema ANTES de renderizar a página
+        if (localStorage.getItem('theme') === 'dark' || 
+            (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Teko', sans-serif;
+            overflow: hidden;
+            zoom: 70%; 
+            /* A transição foi movida para cá para suavizar a mudança de tema */
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+        /* Estilos para o modo light */
+        .light body {
+            background-color: #f9fafb; /* bg-gray-50 */
+            color: #1f2937; /* text-gray-800 */
+        }
+        .light .text-white {
+            color: #1f2937; /* text-gray-800 */
+        }
+        .light .bg-gray-800 {
+            background-color: #ffffff; /* bg-white */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .light .text-gray-500 {
+            color: #6b7280; /* text-gray-500 */
+        }
+        /* Estilos para o modo dark (padrão) */
+        .dark body {
+            background-color: #111827; /* bg-gray-900 */
+            color: #f3f4f6; /* text-gray-100 */
+        }
+        @keyframes podium-enter {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .podium-card {
+            animation: podium-enter 0.5s ease-out forwards;
+        }
+        .podium-1 { border-bottom: 8px solid #ffd700; }
+        .podium-2 { border-bottom: 8px solid #c0c0c0; }
+        .podium-3 { border-bottom: 8px solid #cd7f32; }
+
+        @keyframes rank-enter {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .rank-item {
+            animation: rank-enter 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="p-4 lg:p-8">
+
+    <div class="container mx-auto max-w-7xl">
+        
+        <header class="text-center mb-6">
+            <h1 class="text-6xl lg:text-8xl font-bold text-white uppercase tracking-wider">Ranking de Vendas</h1>
+        </header>
+
+        <div id="podium-section" class="grid grid-cols-3 gap-4 lg:gap-8 items-end mb-8">
+            <div id="podium-2-card" class="podium-card bg-gray-800 p-6 rounded-t-2xl text-center h-full shadow-2xl podium-2" style="animation-delay: 0.2s;">
+                </div>
+            <div id="podium-1-card" class="podium-card bg-gray-800 p-6 rounded-t-2xl text-center h-full shadow-2xl podium-1">
+                </div>
+            <div id="podium-3-card" class="podium-card bg-gray-800 p-6 rounded-t-2xl text-center h-full shadow-2xl podium-3" style="animation-delay: 0.4s;">
+                </div>
+        </div>
+
+        <div id="ranking-list" class="space-y-3">
+            </div>
+
+        <div id="empty-state" class="text-center py-10 hidden">
+            <p class="text-4xl text-gray-500">Aguardando dados dos campeões...</p>
+        </div>
+
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const API_URL = 'http://localhost:3000/api';
+        const SOCKET_URL = 'http://localhost:3000';
+        
+        const podiumSection = document.getElementById('podium-section');
+        const podium1Card = document.getElementById('podium-1-card');
+        const podium2Card = document.getElementById('podium-2-card');
+        const podium3Card = document.getElementById('podium-3-card');
+        const rankingList = document.getElementById('ranking-list');
+        const emptyState = document.getElementById('empty-state');
+        const imagePlaceholder = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2QxZDVmYiI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MxLjY2IDAgMyAxLjM0IDMgM3MtMS4zNCAzLTMgMy0zLTEuMzQtMy0zIDEuMzQtMyAzLTN6bTAgMTRjLTIuNjcgMC01LTEuMjktNi42Ny0zLjIyLjgxLTEuMzEgMi42OC0yLjI4IDQuNjctMi4yOCAxLjk5IDAgMy44Ni45NyA0LjY3IDIuMjgtMS42NyAxLjkzLTMuOTkgMy4yMi02LjY3IDMuMjJ6Ii8+PC9zdmc+';
+
+        let lastTotalSales = 0;
+
+        // --- ADICIONADO: OUVINTE PARA SINCRONIZAR TEMA ENTRE ABAS ---
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'theme') {
+                if (event.newValue === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.classList.remove('light');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                }
+            }
+        });
+
+        const formatCurrency = (value) => {
+            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        };
+
+        const launchConfetti = () => {
+            confetti({
+                particleCount: 150,
+                spread: 90,
+                origin: { y: 0.6 }
+            });
+        };
+
+        const renderRanking = (sellers) => {
+            podium1Card.innerHTML = '';
+            podium2Card.innerHTML = '';
+            podium3Card.innerHTML = '';
+            rankingList.innerHTML = '';
+
+            if (!sellers || sellers.length === 0) {
+                emptyState.classList.remove('hidden');
+                podiumSection.classList.add('hidden');
+                rankingList.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            podiumSection.classList.remove('hidden');
+            rankingList.classList.remove('hidden');
+
+            const currentTotalSales = sellers.reduce((sum, seller) => sum + seller.totalSales, 0);
+
+            if (currentTotalSales > lastTotalSales && lastTotalSales !== 0) {
+                launchConfetti();
+            }
+            lastTotalSales = currentTotalSales;
+
+            sellers.slice(0, 3).forEach((seller, index) => {
+                const rank = index + 1;
+                let card;
+                let heightClass;
+                let medal;
+
+                if (rank === 1) {
+                    card = podium1Card;
+                    heightClass = 'min-h-[300px]';
+                    medal = '🥇';
+                } else if (rank === 2) {
+                    card = podium2Card;
+                    heightClass = 'min-h-[250px]';
+                    medal = '🥈';
+                } else {
+                    card = podium3Card;
+                    heightClass = 'min-h-[200px]';
+                    medal = '🥉';
+                }
+
+                card.className = "podium-card bg-gray-800 p-6 rounded-t-2xl text-center h-full shadow-2xl podium-" + rank + " " + heightClass;
+                card.innerHTML = `
+                    <div class="flex flex-col justify-center items-center h-full">
+                        <div class="text-6xl">${medal}</div>
+                        <img src="${seller.image || imagePlaceholder}" alt="${seller.name}" class="w-24 h-24 lg:w-32 lg:h-32 object-cover rounded-full my-4 border-4 border-gray-600">
+                        <h2 class="text-4xl lg:text-5xl font-bold uppercase text-white">${seller.name}</h2>
+                        <p class="text-4xl lg:text-6xl font-semibold text-yellow-400">${formatCurrency(seller.totalSales)}</p>
+                    </div>
+                `;
+            });
+
+            sellers.slice(3).forEach((seller, index) => {
+                const rank = index + 4;
+                const listItem = document.createElement('div');
+                listItem.className = 'rank-item bg-gray-800 rounded-lg p-4 flex items-center justify-between shadow-lg';
+                listItem.style.animationDelay = `${index * 0.1}s`;
+                listItem.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="text-4xl font-bold text-gray-500 w-12">${rank}</span>
+                        <img src="${seller.image || imagePlaceholder}" alt="${seller.name}" class="w-12 h-12 object-cover rounded-full mx-4">
+                        <span class="text-4xl font-semibold uppercase">${seller.name}</span>
+                    </div>
+                    <span class="text-4xl font-bold text-green-400">${formatCurrency(seller.totalSales)}</span>
+                `;
+                rankingList.appendChild(listItem);
+            });
+        };
+
+        const fetchData = async () => {
+            try {
+                const response = await fetch(`${API_URL}/ranking`);
+                if (!response.ok) {
+                    throw new Error('Falha ao buscar dados da API');
+                }
+                const sellers = await response.json();
+                renderRanking(sellers);
+            } catch (error) {
+                console.error(error);
+                emptyState.classList.remove('hidden');
+                podiumSection.classList.add('hidden');
+                rankingList.classList.add('hidden');
+            }
+        };
+
+        const socket = io(SOCKET_URL);
+
+        socket.on('connect', () => {
+            console.log('✅ Conectado ao servidor de atualizações em tempo real!');
+        });
+
+        socket.on('update', () => {
+            console.log('🔄 Recebida notificação de atualização. Buscando novos dados...');
+            fetchData();
+        });
+
+        socket.on('disconnect', () => {
+            console.log('❌ Desconectado do servidor de atualizações.');
+        });
+        
+        fetchData();
+    });
+    </script>
+</body>
+</html>
