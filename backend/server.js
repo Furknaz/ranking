@@ -66,16 +66,52 @@ const startServer = async () => {
     app.use('/api/vendedores', sellersRoutes(db, broadcastUpdate));
     app.use('/api/vendas', salesRoutes(db, updateSellerTotalSales, broadcastUpdate));
 
-    // Rota de ranking principal
-    app.get('/api/ranking', async (req, res, next) => {
-        try {
-            const sortedSellers = await db.all('SELECT * FROM sellers ORDER BY totalSales DESC');
-            res.json(sortedSellers);
-        } catch (err) {
-            next(err);
-        }
-    });
+// Rota de ranking principal, agora com suporte a filtros de período
+app.get('/api/ranking', async (req, res, next) => {
+    try {
+        const { period } = req.query; // 'today', 'week', 'month', 'all'
+        let dateFilter = '';
+        const params = [];
 
+        const now = new Date();
+        if (period === 'today') {
+            const today = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+            dateFilter = 'AND sa.date >= ?';
+            params.push(today);
+        } else if (period === 'week') {
+            const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay())).toISOString();
+            dateFilter = 'AND sa.date >= ?';
+            params.push(firstDayOfWeek);
+        } else if (period === 'month') {
+            const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+            dateFilter = 'AND sa.date >= ?';
+            params.push(firstDayOfMonth);
+        }
+
+        // A query agora calcula o total de vendas dinamicamente com base no filtro de data.
+        // Isso é mais preciso do que depender de uma coluna 'totalSales' pré-calculada para filtros.
+        const query = `
+            SELECT
+                s.id,
+                s.name,
+                s.image,
+                COALESCE(SUM(sa.value), 0) as totalSales
+            FROM
+                sellers s
+            LEFT JOIN
+                sales sa ON s.id = sa.sellerId ${dateFilter}
+            GROUP BY
+                s.id
+            ORDER BY
+                totalSales DESC
+        `;
+
+        const sortedSellers = await db.all(query, params);
+        res.json(sortedSellers);
+    } catch (err) {
+        next(err);
+    }
+});
     // --- MIDDLEWARE DE TRATAMENTO DE ERROS ---
     app.use((err, req, res, next) => {
         console.error('Um erro ocorreu:', err.stack);

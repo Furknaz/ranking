@@ -112,6 +112,13 @@
 
             <div class="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg fade-in" style="animation-delay: 0.2s;">
                 <h2 class="text-3xl font-bold mb-6 text-center dark:text-white">Pódio de Vendas</h2>
+
+                <div id="filters" class="flex justify-center items-center gap-2 mb-6">
+                    <button data-period="all" class="filter-btn bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg text-sm">Geral</button>
+                    <button data-period="month" class="filter-btn bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold py-2 px-4 rounded-lg text-sm">Mensal</button>
+                    <button data-period="week" class="filter-btn bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold py-2 px-4 rounded-lg text-sm">Semanal</button>
+                    <button data-period="today" class="filter-btn bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold py-2 px-4 rounded-lg text-sm">Hoje</button>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-700">
@@ -161,6 +168,46 @@
         let currentSellerForDetails = null;
         let imagePlaceholder = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2QxZDVmYiI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MxLjY2IDAgMyAxLjM0IDMgM3MtMS4zNCAzLTMgMy0zLTEuMzQtMy0zIDEuMzQtMyAzLTN6bTAgMTRjLTIuNjcgMC01LTEuMjktNi42Ny0zLjIyLjgxLTEuMzEgMi42OC0yLjI4IDQuNjctMi4yOCAxLjk5IDAgMy44Ni45NyA0LjY3IDIuMjgtMS42NyAxLjkzLTMuOTkgMy4yMi02LjY3IDMuMjJ6Ii8+PC9zdmc+';
         
+        // --- INÍCIO: LÓGICA DE FILTROS ADICIONADA ---
+        const filtersContainer = document.getElementById('filters');
+        let currentPeriod = 'all'; // Padrão
+
+        const fetchRanking = async (period = 'all') => {
+            try {
+                // Adicionamos o parâmetro 'period' à chamada da API
+                const sellerList = await apiRequest(`/ranking?period=${period}`);
+                renderRanking(sellerList);
+                updateActiveFilterButton(period);
+            } catch (error) {
+                renderRanking([]);
+            }
+        };
+
+        const updateActiveFilterButton = (activePeriod) => {
+            const buttons = filtersContainer.querySelectorAll('.filter-btn');
+            buttons.forEach(button => {
+                if (button.dataset.period === activePeriod) {
+                    button.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'text-gray-800', 'dark:text-gray-200');
+                    button.classList.add('bg-indigo-600', 'text-white');
+                } else {
+                    button.classList.remove('bg-indigo-600', 'text-white');
+                    button.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-800', 'dark:text-gray-200');
+                }
+            });
+        };
+
+        filtersContainer.addEventListener('click', (e) => {
+            const button = e.target.closest('.filter-btn');
+            if (button) {
+                const period = button.dataset.period;
+                if (period !== currentPeriod) {
+                    currentPeriod = period;
+                    fetchRanking(period);
+                }
+            }
+        });
+        // --- FIM: LÓGICA DE FILTROS ADICIONADA ---
+
         // --- FUNÇÕES AUXILIARES ---
         const apiRequest = async (endpoint, method = 'GET', body = null) => {
             try {
@@ -311,7 +358,26 @@
 
         // --- MANIPULADORES DE EVENTOS (HANDLERS) ---
         const handleAddSeller = async (e) => { e.preventDefault(); const name = document.getElementById('seller-name').value.trim(); const imageFile = document.getElementById('seller-image-upload').files[0]; if (!name) return showToast('O nome é obrigatório.', true); let imageBase64 = null; if (imageFile) imageBase64 = await fileToBase64(imageFile); try { await apiRequest('/vendedores', 'POST', { name, image: imageBase64 }); showToast('Vendedor cadastrado!'); addSellerForm.reset(); init(); } catch (error) {} };
-        const handleAddSale = async (e) => { e.preventDefault(); const sellerId = parseInt(document.getElementById('sale-seller').value, 10); const saleValueInput = document.getElementById('sale-value').value; const value = parseFloat(saleValueInput.replace(/\./g, '').replace(',', '.')); if (!sellerId || !value || value <= 0) { return showToast('Preencha os campos corretamente.', true); } try { await apiRequest('/vendas', 'POST', { sellerId, value }); showToast('Venda registrada com sucesso!'); addSaleForm.reset(); init(); } catch (error) {} };
+        
+        const handleAddSale = async (e) => { 
+            e.preventDefault(); 
+            const sellerId = parseInt(document.getElementById('sale-seller').value, 10); 
+            const saleValueInput = document.getElementById('sale-value').value; 
+            const value = parseFloat(saleValueInput.replace(/\./g, '').replace(',', '.')); 
+            if (!sellerId || !value || value <= 0) { 
+                return showToast('Preencha os campos corretamente.', true); 
+            } 
+            try { 
+                await apiRequest('/vendas', 'POST', { sellerId, value }); 
+                showToast('Venda registrada com sucesso!'); 
+                addSaleForm.reset(); 
+                
+                // ATUALIZADO: Chama o fetchRanking para atualizar a visão com o filtro correto
+                await fetchRanking(currentPeriod);
+
+            } catch (error) {} 
+        };
+
         const handleEditSeller = async (e) => { e.preventDefault(); const id = parseInt(document.getElementById('edit-seller-id').value, 10); const name = document.getElementById('edit-seller-name').value.trim(); const imageFile = document.getElementById('edit-seller-image-upload').files[0]; let image = document.getElementById('edit-seller-original-image').value; if (imageFile) { image = await fileToBase64(imageFile); } try { await apiRequest(`/vendedores/${id}`, 'PUT', { name, image }); showToast('Vendedor atualizado!'); closeModal(editModal); init(); } catch(error) {} };
         
         // CÓDIGO CORRIGIDO E FINAL
@@ -458,12 +524,8 @@
 
         // --- INICIALIZAÇÃO ---
         const init = async () => {
-            try {
-                const sellerList = await apiRequest('/ranking');
-                renderRanking(sellerList);
-            } catch (error) {
-                renderRanking([]);
-            }
+            // ATUALIZADO: Agora usa a função fetchRanking com o período atual
+            await fetchRanking(currentPeriod);
         };
         
         syncThemeIcons();
