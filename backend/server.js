@@ -20,8 +20,17 @@ const io = new Server(server, {
 });
 const PORT = process.env.PORT || 3000;
 
+// --- INÍCIO DA CORREÇÃO ---
 // Middlewares Globais
-app.use(cors());
+// Substituímos o app.use(cors()) por uma configuração mais explícita
+// para garantir que as conexões de diferentes origens (como o servidor Python) funcionem.
+const corsOptions = {
+  origin: '*', // Permite requisições de qualquer origem. Seguro para desenvolvimento.
+  methods: ["GET", "POST", "PUT", "DELETE"],
+};
+app.use(cors(corsOptions));
+// --- FIM DA CORREÇÃO ---
+
 app.use(express.json({ limit: '10mb' }));
 
 // Variável para a conexão com o banco de dados

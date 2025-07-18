@@ -38,12 +38,23 @@
         .modal-backdrop { animation: fadeIn 0.3s ease-out forwards; }
         .seller-image { width: 40px; height: 40px; object-fit: cover; border-radius: 50%; margin-right: 12px; }
         .seller-image-large { width: 80px; height: 80px; object-fit: cover; border-radius: 50%; }
-        
-        /* Classe de animação para a linha ser excluída */
         .fade-out-row {
             transition: opacity 0.4s ease-out, transform 0.4s ease-out;
             opacity: 0;
             transform: scale(0.95);
+        }
+        /* Estilos para o spinner */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -56,19 +67,16 @@
             <p class="text-gray-500 mt-2 dark:text-gray-400">Acompanhe o desempenho da sua equipe em tempo real.</p>
             
             <div class="absolute top-0 right-0 flex items-center space-x-2">
-                
-                <button id="cast-button" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5" title="Transmitir para Dispositivo">
+                <button id="open-cast-modal-button" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5" title="Transmitir para Dispositivo">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M21 3H3c-1.1 0-2 .9-2 2v3h2V5h18v12h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11z"/>
                     </svg>
                 </button>
-                
                 <button id="open-tv-view-button" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5" title="Abrir Modo TV em Nova Aba">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/>
                     </svg>
                 </button>
-
                 <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
                     <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
                     <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 5.05A1 1 0 003.636 6.464l.707.707a1 1 0 001.414-1.414l-.707-.707zM3 11a1 1 0 100-2H2a1 1 0 100 2h1zM6.464 16.364a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414z"></path></svg>
@@ -153,10 +161,30 @@
     <div id="sales-detail-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden modal-backdrop z-40"><div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl mx-4"><h3 id="sales-detail-seller-name" class="text-xl font-semibold mb-4 dark:text-white">Vendas de [Nome]</h3><div class="overflow-x-auto mb-4" style="max-height: 300px;"><table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"><thead class="bg-gray-50 dark:bg-gray-700 sticky top-0"><tr><th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Data</th><th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Valor</th><th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ações</th></tr></thead><tbody id="sales-detail-table-body" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"></tbody></table></div><div class="flex justify-end"><button type="button" class="btn-cancel px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">Fechar</button></div></div></div>
     <div id="edit-sale-value-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden modal-backdrop z-50"><div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm mx-4"><h3 class="text-xl font-semibold mb-4 dark:text-white">Editar Valor da Venda</h3><form id="edit-sale-value-form"><input type="hidden" id="edit-sale-value-id"><div class="mb-4"><label for="new-sale-value" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Novo Valor (R$)</label><input type="text" inputmode="decimal" id="new-sale-value" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600" required></div><div class="flex justify-end space-x-4"><button type="button" class="btn-cancel px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">Cancelar</button><button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Salvar</button></div></form></div></div>
 
+    <div id="cast-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden modal-backdrop z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg mx-4">
+            <h3 class="text-2xl font-semibold mb-4 dark:text-white">Transmitir Ranking</h3>
+            <div id="cast-device-list-container" class="space-y-3" style="max-height: 300px; overflow-y: auto;">
+                </div>
+            <div id="cast-loading-state" class="text-center py-8 hidden">
+                <div class="spinner mx-auto"></div>
+                <p class="mt-4 text-lg text-gray-500 dark:text-gray-400">Procurando dispositivos na rede...</p>
+            </div>
+            <div id="cast-empty-state" class="text-center py-8 hidden">
+                <p class="text-lg text-gray-500 dark:text-gray-400">Nenhum dispositivo de transmissão encontrado.</p>
+                <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Verifique se sua TV ou Chromecast está ligado e na mesma rede Wi-Fi.</p>
+            </div>
+            <div class="flex justify-end space-x-4 mt-6">
+                <button type="button" id="cancel-cast-button" class="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">Cancelar</button>
+                <button type="button" id="confirm-cast-button" class="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed">Transmitir</button>
+            </div>
+        </div>
+    </div>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         // --- CONSTANTES E VARIÁVEIS GLOBAIS ---
         const API_URL = 'http://localhost:3000/api';
+        const CAST_API_URL = '/api/cast'; 
         const addSellerForm = document.getElementById('add-seller-form');
         const rankingTableBody = document.getElementById('ranking-table-body');
         const emptyState = document.getElementById('empty-state');
@@ -175,7 +203,92 @@
         let currentSellerForDetails = null;
         let imagePlaceholder = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2QxZDVmYiI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MxLjY2IDAgMyAxLjM0IDMgM3MtMS4zNCAzLTMgMy0zLTEuMzQtMy0zIDEuMzQtMyAzLTN6bTAgMTRjLTIuNjcgMC01LTEuMjktNi42Ny0zLjIyLjgxLTEuMzEgMi42OC0yLjI4IDQuNjctMi4yOCAxLjk5IDAgMy44Ni45NyA0LjY3IDIuMjgtMS42NyAxLjkzLTMuOTkgMy4yMi02LjY3IDMuMjJ6Ii8+PC9zdmc+';
         
-        // --- INÍCIO: LÓGICA DE FILTROS ADICIONADA ---
+        // --- INÍCIO: LÓGICA DE CASTING ---
+        const castModal = document.getElementById('cast-modal');
+        const openCastModalButton = document.getElementById('open-cast-modal-button');
+        const cancelCastButton = document.getElementById('cancel-cast-button');
+        const confirmCastButton = document.getElementById('confirm-cast-button');
+        const castDeviceListContainer = document.getElementById('cast-device-list-container');
+        const castLoadingState = document.getElementById('cast-loading-state');
+        const castEmptyState = document.getElementById('cast-empty-state');
+
+        const openCastModal = async () => {
+            castModal.classList.remove('hidden');
+            castLoadingState.classList.remove('hidden');
+            castEmptyState.classList.add('hidden');
+            castDeviceListContainer.innerHTML = '';
+            confirmCastButton.disabled = true;
+
+            try {
+                // A URL para a API de casting é relativa à raiz, servida pelo Python.
+                const response = await fetch(`${CAST_API_URL}/devices`);
+                if (!response.ok) throw new Error('Falha ao buscar dispositivos. O servidor de casting está rodando?');
+                const devices = await response.json();
+
+                castLoadingState.classList.add('hidden');
+
+                if (devices.length === 0) {
+                    castEmptyState.classList.remove('hidden');
+                } else {
+                    devices.forEach(device => {
+                        const deviceElement = document.createElement('label');
+                        deviceElement.className = 'flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
+                        deviceElement.innerHTML = `
+                            <input type="checkbox" value="${device.uuid}" class="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500">
+                            <span class="ml-3 text-lg dark:text-gray-300">${device.name}</span>
+                        `;
+                        castDeviceListContainer.appendChild(deviceElement);
+                    });
+                    confirmCastButton.disabled = false;
+                }
+            } catch (error) {
+                console.error('Erro ao buscar dispositivos de cast:', error);
+                castLoadingState.classList.add('hidden');
+                castEmptyState.classList.remove('hidden');
+                showToast(error.message, true);
+            }
+        };
+
+        const closeCastModal = () => {
+            castModal.classList.add('hidden');
+        };
+
+        const handleConfirmCast = async () => {
+            const selectedCheckboxes = castDeviceListContainer.querySelectorAll('input[type="checkbox"]:checked');
+            const selectedDeviceUUIDs = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+            if (selectedDeviceUUIDs.length === 0) {
+                showToast('Selecione pelo menos um dispositivo.', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${CAST_API_URL}/connect`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ devices: selectedDeviceUUIDs }),
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    showToast('Comando de transmissão enviado com sucesso!');
+                } else {
+                    throw new Error(result.message || 'Falha ao enviar comando.');
+                }
+            } catch (error) {
+                console.error('Erro ao transmitir:', error);
+                showToast(error.message, true);
+            } finally {
+                closeCastModal();
+            }
+        };
+
+        openCastModalButton.addEventListener('click', openCastModal);
+        cancelCastButton.addEventListener('click', closeCastModal);
+        confirmCastButton.addEventListener('click', handleConfirmCast);
+        // --- FIM: LÓGICA DE CASTING ---
+        
+        // --- LÓGICA DE FILTROS ADICIONADA ---
         const filtersContainer = document.getElementById('filters');
         let currentPeriod = 'all'; // Padrão
 
@@ -213,7 +326,6 @@
                 }
             }
         });
-        // --- FIM: LÓGICA DE FILTROS ADICIONADA ---
 
         // --- FUNÇÕES AUXILIARES ---
         const apiRequest = async (endpoint, method = 'GET', body = null) => {
@@ -243,7 +355,7 @@
 
         const showToast = (message, isError = false) => {
             toastMessage.textContent = message;
-            toast.className = 'fixed bottom-5 right-5 text-white py-3 px-5 rounded-lg shadow-xl transform transition-all duration-300';
+            toast.className = 'fixed bottom-5 right-5 text-white py-3 px-5 rounded-lg shadow-xl transform transition-all duration-300 z-50';
             toast.classList.add(isError ? 'bg-red-600' : 'bg-gray-900', 'opacity-100', 'translate-y-0');
             setTimeout(() => {
                 toast.classList.remove('opacity-100', 'translate-y-0');
@@ -298,7 +410,6 @@
                     if (rank === 3) medal = '🥉';
                     const row = document.createElement('tr');
                     row.className = 'fade-in';
-                    // Adiciona um data-attribute para o ID do vendedor na linha
                     row.dataset.sellerId = seller.id;
                     row.innerHTML = `
                         <td class="px-6 py-4"><div class="text-lg font-bold">${rank} ${medal}</div></td>
@@ -378,68 +489,45 @@
                 await apiRequest('/vendas', 'POST', { sellerId, value }); 
                 showToast('Venda registrada com sucesso!'); 
                 addSaleForm.reset(); 
-                
-                // ATUALIZADO: Chama o fetchRanking para atualizar a visão com o filtro correto
                 await fetchRanking(currentPeriod);
-
             } catch (error) {} 
         };
 
         const handleEditSeller = async (e) => { e.preventDefault(); const id = parseInt(document.getElementById('edit-seller-id').value, 10); const name = document.getElementById('edit-seller-name').value.trim(); const imageFile = document.getElementById('edit-seller-image-upload').files[0]; let image = document.getElementById('edit-seller-original-image').value; if (imageFile) { image = await fileToBase64(imageFile); } try { await apiRequest(`/vendedores/${id}`, 'PUT', { name, image }); showToast('Vendedor atualizado!'); closeModal(editModal); init(); } catch(error) {} };
         
-        // CÓDIGO CORRIGIDO E FINAL
         const handleConfirmDelete = async () => {
             const { id, type, sellerId } = itemToDelete;
             closeModal(deleteModal);
 
             if (type === 'seller') {
                 const rowToDelete = rankingTableBody.querySelector(`tr[data-seller-id="${id}"]`);
-                if (rowToDelete) {
-                    rowToDelete.classList.add('fade-out-row');
-                }
-                
+                if (rowToDelete) rowToDelete.classList.add('fade-out-row');
                 try {
                     await apiRequest(`/vendedores/${id}`, 'DELETE');
-                    
-                    // Espera a animação para remover o elemento do DOM
                     setTimeout(() => {
-                        if (rowToDelete) {
-                            rowToDelete.remove();
-                        }
-                        // Atualiza a lista de vendedores no estado local
+                        if (rowToDelete) rowToDelete.remove();
                         sellers = sellers.filter(s => s.id !== id);
-                        
-                        // Apenas atualiza os rankings no DOM, sem redesenhar tudo
                         updateRanksInDOM();
                         populateSellersSelect();
                         showToast('Vendedor excluído com sucesso!');
-                         // Verifica se a lista ficou vazia
                         if (sellers.length === 0) {
                            emptyState.classList.remove('hidden');
                            rankingTableBody.parentElement.parentElement.classList.add('hidden');
                         }
                     }, 400);
-
                 } catch (error) {
-                    console.error('Falha ao excluir vendedor:', error);
-                    if (rowToDelete) {
-                        rowToDelete.classList.remove('fade-out-row'); // Restaura a linha se a exclusão falhar
-                    }
+                    if (rowToDelete) rowToDelete.classList.remove('fade-out-row');
                 }
             } else if (type === 'sale') {
                 try {
                     await apiRequest(`/vendas/${id}`, 'DELETE');
                     showToast('Venda excluída.');
-                    // Atualiza a lista de vendas do vendedor, se o modal estiver aberto
                     if (salesDetailModal.classList.contains('hidden') === false && currentSellerForDetails === sellerId) {
                        const sales = await apiRequest(`/vendedores/${sellerId}/vendas`);
                        renderSellerSales(sales);
                     }
-                    // Recarrega tudo pois o total do vendedor mudou
                     init();
-                } catch (error) {
-                    console.error('Falha ao excluir venda:', error);
-                }
+                } catch (error) {}
             }
         };
 
@@ -488,9 +576,10 @@
         
         document.querySelectorAll('.btn-cancel, .modal-backdrop').forEach(el => { 
             el.addEventListener('click', (e) => { 
-                if (e.target === el) { 
+                // Adicionei a verificação para o novo modal de cast
+                if (e.target.id === 'cast-modal' || e.target.classList.contains('btn-cancel')) {
                     closeModal(el.closest('.modal-backdrop')); 
-                } 
+                }
             }); 
         });
         
@@ -531,7 +620,6 @@
 
         // --- INICIALIZAÇÃO ---
         const init = async () => {
-            // ATUALIZADO: Agora usa a função fetchRanking com o período atual
             await fetchRanking(currentPeriod);
         };
         
