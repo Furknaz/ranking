@@ -1,0 +1,165 @@
+/* Estilos específicos para profile.html (adaptados para o layout do ranking.html) */
+
+/* INÍCIO DA ADIÇÃO JOTAMAKER AI: Estilos Globais e Reset Parcial (mantidos para variáveis) */
+:root {
+    --bg-dark-900: #111827; /* Tailwind gray-900 */
+    --bg-dark-800: #1f2937; /* Tailwind gray-800 */
+    --bg-dark-700: #374151; /* Tailwind gray-700 */
+    --text-light: #e5e7eb; /* Tailwind gray-200 */
+    --text-muted: #9ca3af; /* Tailwind gray-400 */
+    --accent-indigo: #4f46e5; /* Tailwind indigo-600 */
+    --accent-indigo-dark: #4338ca; /* Tailwind indigo-700 */
+    --border-dark: #374151; /* Tailwind gray-700 */
+    --accent-pink: #ec4899; /* Cor baseada na imagem anterior */
+    --accent-blue: #3b82f6; /* Cor baseada na imagem anterior */
+    --accent-orange: #f97316; /* Cor baseada na imagem anterior */
+}
+
+/* Remover ou adaptar estilos de layout que não se aplicam mais */
+/* INÍCIO DA REMOÇÃO/AJUSTE JOTAMAKER AI: Removidos estilos de layout do profile.css anterior */
+/*
+body {
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+.dashboard-layout-grid {
+    display: grid;
+    grid-template-columns: 16rem 1fr 20rem;
+    min-height: 100vh;
+}
+
+.dashboard-sidebar-left, .main-content-dashboard, .dashboard-sidebar-right {
+    // Estilos que foram movidos para ranking.css ou não são mais necessários
+}
+*/
+/* FIM DA REMOÇÃO/AJUSTE JOTAMAKER AI */
+
+/* Estilos para cards de dashboard e formulários (se necessário sobrescrever ranking.css) */
+/* As classes dashboard-card, metric-value, metric-label já estão no seu HTML e serão estilizadas pelo Tailwind.
+   Estilos específicos de formulários podem ser adicionados aqui se necessário. */
+
+.dashboard-card {
+    /* REMOÇÃO JOTAMAKER AI: background-color será definido diretamente no HTML com Tailwind */
+    padding: 1.5rem; /* p-6 */
+    border-radius: 0.5rem; /* rounded-lg */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* shadow-md */
+    display: flex; /* Para organizar o conteúdo interno como flexbox */
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Estilos para a lista de atividades recentes */
+.activity-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-dark); /* Adicionado usando variável */
+}
+.activity-item:last-child {
+    border-bottom: 0;
+}
+.activity-status {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+}
+/* Cores dos status (mantidas) */
+.status-inprogress { background-color: #2563eb; color: #ffffff; }
+.status-submitted { background-color: #16a34a; color: #ffffff; }
+.status-onhold { background-color: #d97706; color: #ffffff; }
+.status-completed { background-color: #9333ea; color: #ffffff; }
+
+/* Estilos para campos de formulário */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    margin-top: 0.25rem; /* Ajustado para um pouco menos de margem se estiver muito espaçado */
+    /* REMOÇÃO JOTAMAKER AI: color, background-color e border serão definidos no HTML com Tailwind */
+    border-radius: 0.5rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="password"]:focus {
+    border-color: var(--accent-indigo);
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.5);
+}
+
+input[readonly] {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    /* REMOÇÃO JOTAMAKER AI: color será definido no HTML com Tailwind */
+    margin-bottom: 0.25rem;
+}
+
+/* Botões de formulário (mantidos do profile.css anterior) */
+.content-section form button[type="submit"] {
+    width: 100%;
+    padding: 0.75rem 1.25rem;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: var(--accent-indigo);
+    border-radius: 0.5rem;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+
+.content-section form button[type="submit"]:hover {
+    background-color: var(--accent-indigo-dark);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilos para o botão de exclusão de conta (seção de ações) */
+#delete-account-button {
+    border: 1px solid #f87171; /* border border-red-400 */
+    color: #f87171; /* text-red-400 */
+    background-color: transparent;
+    transition: all 0.2s;
+}
+
+#delete-account-button:hover {
+    background-color: #7f1d1d; /* hover:bg-red-900 */
+    color: #ffffff;
+}
+
+/* Estilos de modais de confirmação */
+.modal-backdrop .btn-cancel-logout,
+.modal-backdrop .btn-cancel-delete-account {
+    /* REMOÇÃO JOTAMAKER AI: background-color e color serão definidos no HTML com Tailwind */
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem; /* rounded-lg */
+    transition: background-color 0.2s;
+}
+
+.modal-backdrop .btn-cancel-logout:hover,
+.modal-backdrop .btn-cancel-delete-account:hover {
+    background-color: #6b7280; /* hover:bg-gray-500 */
+}
+
+/* Novas cores para os títulos das seções no profile.html reestruturado */
+/* REMOÇÃO JOTAMAKER AI: color será definido no HTML com Tailwind */
+h2.text-2xl.font-semibold.flex.items-center.dark\:text-white {
+    /* color: var(--text-light); */ /* Removido */
+}
+h2#export-import-title.text-2xl.font-semibold.flex.items-center.dark\:text-white {
+    /* color: var(--text-light); */ /* Removido */
+}
