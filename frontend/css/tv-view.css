@@ -1,0 +1,44 @@
+/* Estilos específicos para tv-view.html */
+
+body { 
+    font-family: 'Teko', sans-serif;
+    overflow: hidden;
+    zoom: 70%; 
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+html.light body { 
+    background-color: #f9fafb; /* bg-gray-50 */ 
+    color: #1f2937; /* text-gray-800 */ 
+}
+html.light .text-white { 
+    color: #1f2937; 
+}
+html.light .bg-gray-800 { 
+    background-color: #ffffff; /* bg-white */ 
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); 
+}
+html.light .text-gray-500 { 
+    color: #6b7280; 
+}
+html.dark body {
+    background-color: #111827; /* bg-gray-900 */
+    color: #f3f4f6; /* text-gray-100 */
+}
+@keyframes podium-enter {
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.podium-card {
+    animation: podium-enter 0.5s ease-out forwards;
+}
+.podium-1 { border-bottom: 30px solid #ffd700; }
+.podium-2 { border-bottom: 20px solid #c0c0c0; }
+.podium-3 { border-bottom: 10px solid #cd7f32; }
+
+@keyframes rank-enter {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+.rank-item {
+    animation: rank-enter 0.5s ease-out forwards;
+}

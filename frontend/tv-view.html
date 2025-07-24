@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking de Vendas - Televisão</title>
+
+    <script>
+        if (localStorage.getItem('theme') === 'dark' ||
+            (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light'); // Garante que 'light' seja removido se for dark
+        } else {
+            document.documentElement.classList.add('light'); // Adiciona a classe 'light' explicitamente
+            document.documentElement.classList.remove('dark'); // Garante que 'dark' seja removido se for light
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/tv-view.css"> 
+</head>
+<body class="p-4 lg:p-8">
+
+    <div class="container mx-auto max-w-7xl">
+        
+        <header class="text-center mb-6">
+            <h1 class="text-6xl lg:text-8xl font-bold text-white uppercase tracking-wider">Ranking de Vendas</h1>
+        </header>
+
+        <div id="podium-section" class="grid grid-cols-3 gap-4 lg:gap-8 items-end mb-8">
+            <div id="podium-2-card" class="podium-card bg-gray-800 p-6 rounded-t-2xl text-center h-full shadow-2xl podium-2" style="animation-delay: 0.2s;">
+            </div>
+            <div id="podium-1-card" class="podium-card bg-gray-800 p-6 rounded-t-2xl text-center h-full shadow-2xl podium-1">
+            </div>
+            <div id="podium-3-card" class="podium-card bg-gray-800 p-6 rounded-t-2xl text-center h-full shadow-2xl podium-3" style="animation-delay: 0.4s;">
+            </div>
+        </div>
+
+        <div id="ranking-list" class="space-y-3">
+        </div>
+
+        <div id="empty-state" class="text-center py-10 hidden">
+            <p class="text-4xl text-gray-500">Aguardando dados dos campeões...</p>
+        </div>
+
+    </div>
+
+    <script src="js/api.js"></script> 
+    <script src="js/tv-view.js"></script>
+
+    <script>
+        // Este script permanece aqui pois é um listener global para o evento de logout do localStorage
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'logout_event') {
+                console.log('Sinal de logout recebido. Fechando a janela do modo TV...');
+                window.close();
+            }
+        });
+    </script>
+</body>
+</html>

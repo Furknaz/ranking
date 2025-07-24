@@ -1,0 +1,101 @@
+/* Estilos padrão (tema claro) para login.html e register.html */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f9fafb; /* Cor de fundo clara (bg-gray-50 do tv-view.css) */
+    color: #1f2937; /* Cor de texto escura (text-gray-800 do tv-view.css) */
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+/* Estilos para elementos específicos no tema claro */
+/* Quando a tag html NÃO tem a classe 'dark' */
+html:not(.dark) h1.text-white { /* Garante que o h1 seja escuro no tema claro */
+    color: #1f2937;
+}
+
+html:not(.dark) p.text-gray-400 { /* Garante que o p seja cinza escuro no tema claro */
+    color: #6b7280;
+}
+
+/* Campos de entrada e elementos com 'bg-gray-800' no dark mode - agora específico para light theme */
+html:not(.dark) .bg-gray-800 { /* Isso fará com que o input fique branco no tema claro */
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+html:not(.dark) .border-gray-700 { /* Isso fará com que a borda do input fique clara no tema claro */
+    border-color: #d1d5db;
+}
+
+/* Labels dos formulários */
+html:not(.dark) label.text-gray-300 { /* Garante que as labels sejam mais escuras no tema claro */
+    color: #374151;
+}
+
+/* Botão de submit */
+html:not(.dark) .bg-indigo-600 { /* Garante a cor indigo para o botão no tema claro */
+    background-color: #4f46e5;
+}
+html:not(.dark) .hover\:bg-indigo-700:hover { /* Garante o hover indigo mais escuro para o botão */
+    background-color: #4338ca;
+}
+
+/* Links */
+html:not(.dark) .text-indigo-400 { /* Garante a cor indigo para links no tema claro */
+    color: #6366f1;
+}
+html:not(.dark) .hover\:text-indigo-300:hover { /* Garante o hover indigo para links */
+    color: #818cf8;
+}
+
+/* Estilos do Toast (mensagem de notificação) */
+html:not(.dark) #toast {
+    background-color: #ffffff;
+    color: #ffffff !important; /* Adicione !important aqui */
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+
+/* Estilos para o tema escuro, aplicados quando a tag <html> tem a classe 'dark' */
+html.dark body {
+    background-color: #111827; /* bg-gray-900 - Cor de fundo escura */
+    color: #f3f4f6; /* text-gray-100 - Cor de texto clara */
+}
+
+html.dark h1.text-white {
+    color: #e5e7eb; /* Garante que títulos sejam claros no dark mode */
+}
+
+html.dark p.text-gray-400 {
+    color: #9ca3af; /* Ajuste para textos cinzas no dark mode */
+}
+
+html.dark .bg-gray-800 {
+    background-color: #1f2937; /* Fundo escuro para elementos no tema escuro */
+}
+
+html.dark .border-gray-700 {
+    border-color: #374151; /* Borda escura para inputs no tema escuro */
+}
+
+html.dark label.text-gray-300 {
+    color: #d1d5db; /* Cor do label mais clara no dark mode */
+}
+
+html.dark .bg-indigo-600 {
+    background-color: #4f46e5; /* Mantém a cor indigo original no dark mode */
+}
+html.dark .hover\:bg-indigo-700:hover {
+    background-color: #4338ca;
+}
+
+html.dark .text-indigo-400 {
+    color: #818cf8; /* Links indigo no dark mode */
+}
+html.dark .hover\:text-indigo-300:hover {
+    color: #a5b4fc;
+}
+
+html.dark #toast {
+    background-color: #374151; /* Fundo escuro para o toast no dark mode */
+    color: #e5e7eb; /* Texto claro para o toast no dark mode */
+}
